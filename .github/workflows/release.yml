@@ -1,0 +1,21 @@
+name: Publish Windows EXE Release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build standalone EXE
+        run: dotnet publish LANPrinterFixPro.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.1.0 dist/LANPrinterFixPro.exe --title "LAN Printer Fix Pro v0.1.0" --notes "Bản thử nghiệm: kiểm tra LAN, SMB, Print Spooler và kết nối máy in. Chưa có bộ tự sửa toàn diện." --latest
